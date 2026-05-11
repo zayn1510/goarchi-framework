@@ -27,14 +27,6 @@ var airCmd = &cobra.Command{
 		RunDev()
 	},
 }
-var upgradeCmd = &cobra.Command{
-	Use:   "upgrade",
-	Short: "Upgrade Goarchi CLI ke versi terbaru (build & replace)",
-	Run: func(cmd *cobra.Command, args []string) {
-		Upgrade()
-	},
-}
-
 var installCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Install Goarchi CLI globally",
@@ -277,6 +269,4 @@ func init() {
 	rootCmd.AddCommand(installDBCommand)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(cleanCmd)
-	rootCmd.AddCommand(upgradeCmd)
-
 }

@@ -3,8 +3,14 @@ package tools
 import (
 	"bytes"
 	"fmt"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
+
+	"github.com/disintegration/imaging"
 )
 
 func GenerateController(structName string) (string, error) {
@@ -133,4 +139,44 @@ func GenerateMigration() (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+// SaveResizedImage saves the uploaded image with a consistent width of 800px
+// and auto height while preserving aspect ratio.
+func SaveResizedImage(fileHeader *multipart.FileHeader, saveDir string) (string, error) {
+	// Open uploaded file
+	srcFile, err := fileHeader.Open()
+	if err != nil {
+		return "", err
+	}
+	defer srcFile.Close()
+
+	// Decode image
+	img, err := imaging.Decode(srcFile)
+	if err != nil {
+		return "", err
+	}
+
+	// Resize image to 800px width, height auto (aspect ratio preserved)
+	resizedImg := imaging.Resize(img, 800, 0, imaging.Lanczos)
+
+	// Create destination folder if not exists
+	err = os.MkdirAll(saveDir, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	// Get extension
+	ext := filepath.Ext(fileHeader.Filename)
+	timestamp := time.Now().Format("20060102_150405")
+	fileName := fmt.Sprintf("file_%s%s", timestamp, ext)
+	fullPath := filepath.Join(saveDir, fileName)
+
+	// Save resized image
+	err = imaging.Save(resizedImg, fullPath)
+	if err != nil {
+		return "", err
+	}
+
+	return fileName, nil
 }

@@ -8,90 +8,68 @@ import (
 )
 
 func RunInstall() {
+
 	binaryName := "goarchi"
+
+	// Windows binary extension
 	if runtime.GOOS == "windows" {
 		binaryName += ".exe"
 	}
 
-	// Cari path binary `go`
-	goPath, err := exec.LookPath("go")
-	if err != nil {
-		fmt.Println("❌ Go compiler tidak ditemukan di PATH.")
-		return
-	}
+	fmt.Println("📦 Building Goarchi binary...")
 
 	// Build binary
-	cmd := exec.Command(goPath, "build", "-o", binaryName, "cli/main.go")
+	cmd := exec.Command("go", "build", "-o", binaryName, "cli/main.go")
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println("❌ Gagal build:", err)
+
+	if err := cmd.Run(); err != nil {
+		fmt.Println("❌ Failed to build binary:", err)
 		return
 	}
 
-	// Pindahkan binary ke path global
-	if runtime.GOOS == "windows" {
-		fmt.Println("✅ Build berhasil. Silakan pindahkan", binaryName, "ke direktori dalam PATH Windows kamu secara manual.")
-		return
-	}
+	fmt.Println("\n✅ Binary generated successfully!")
 
-	// Lokasi tujuan (Linux/macOS)
-	dest := "/usr/local/bin/goarchi"
-	err = os.Rename(binaryName, dest)
-	if err != nil {
-		// Jika gagal rename (mungkin beda mount), lakukan copy manual
-		err = copyFile(binaryName, dest)
-		if err != nil {
-			fmt.Println("❌ Gagal memindahkan binary:", err)
-			fmt.Println("🔧 Coba jalankan dengan: sudo env \"PATH=$PATH\" go run cli/main.go install")
-			return
-		}
-		// Hapus file setelah copy
-		_ = os.Remove(binaryName)
-	}
+	// =========================
+	// INSTALLATION GUIDE
+	// =========================
 
-	fmt.Println("✅ Goarchi berhasil terinstall di /usr/local/bin/goarchi")
-}
-func isBinaryRunning(path string) bool {
-	out, err := exec.Command("lsof", path).Output()
-	if err != nil {
-		return false
-	}
-	return len(out) > 0
-}
-func copyFile(src, dst string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer func(in *os.File) {
-		err := in.Close()
-		if err != nil {
-			fmt.Printf("error closing file: %v", err)
-		}
-	}(in)
+	switch runtime.GOOS {
 
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer func(out *os.File) {
-		err := out.Close()
-		if err != nil {
-			fmt.Printf("error closing file: %v", err)
-		}
-	}(out)
+	case "windows":
 
-	_, err = in.Stat()
-	if err != nil {
-		return err
-	}
+		fmt.Println("\n📌 Windows Installation")
+		fmt.Println("Move goarchi.exe to a folder inside your PATH.")
+		fmt.Println("\nExample:")
+		fmt.Println("C:\\Users\\YourUser\\go\\bin")
 
-	_, err = out.ReadFrom(in)
-	if err != nil {
-		return err
-	}
+		fmt.Println("\nThen verify:")
+		fmt.Println("goarchi version")
 
-	return out.Chmod(0755)
+	case "darwin":
+
+		fmt.Println("\n📌 macOS Installation")
+		fmt.Println("Run the following command:")
+
+		fmt.Printf("\nsudo mv %s /usr/local/bin/goarchi\n", binaryName)
+
+		fmt.Println("\nThen verify:")
+		fmt.Println("goarchi version")
+
+	case "linux":
+
+		fmt.Println("\n📌 Linux Installation")
+		fmt.Println("Run the following command:")
+
+		fmt.Printf("\nsudo mv %s /usr/local/bin/goarchi\n", binaryName)
+
+		fmt.Println("\nThen verify:")
+		fmt.Println("goarchi version")
+
+	default:
+
+		fmt.Println("\n⚠️ Unsupported OS detected.")
+		fmt.Println("Please move the binary manually to your system PATH.")
+	}
 }

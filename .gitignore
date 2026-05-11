@@ -1,5 +1,45 @@
-# IDE related
-.idea/
-
-# Env
+# =========================
+# ENV
+# =========================
 .env
+
+# =========================
+# BINARY & BUILD
+# =========================
+goarchi
+goarchi.exe
+tmp/
+cli/tmp/
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# GO
+# =========================
+vendor/
+
+# =========================
+# UPLOADS
+# =========================
+public/uploads/*
+!public/uploads/.gitkeep
+
+# =========================
+# DOCKER (generated files)
+# =========================
+docker-compose.yml
+Dockerfile.dev
+nginx/default.conf
+install.sh

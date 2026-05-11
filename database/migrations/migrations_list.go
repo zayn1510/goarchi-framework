@@ -9,10 +9,4 @@ type Migration struct {
 }
 
 var AllMigrations = []Migration{
-	//{
-	//	Name: "create_users_table",
-	//	Up:   UpCreateUsers,
-	//	Down: DownCreateUser,
-	//},
-	// Tambahkan migration lainnya di sini
 }

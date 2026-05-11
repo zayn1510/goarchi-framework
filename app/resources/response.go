@@ -2,20 +2,23 @@ package resources
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/gin-gonic/gin"
 
 	"net/http"
 )
 
 type Response struct {
-	Message   string `json:"messsage"`
-	Status    bool   `json:"status"`
-	Data      any    `json:"data,omitempty"`
-	Code      int    `json:"code,omitempty"`
-	Duplicate bool   `json:"duplicate,omitempty"`
-	Total     int    `json:"total,omitempty"`
-	Offset    int    `json:"offset,omitempty"`
-	Limit     int    `json:"limit,omitempty"`
+	Message    string `json:"message"`
+	Status     bool   `json:"status"`
+	Data       any    `json:"data,omitempty"`
+	Code       int    `json:"code,omitempty"`
+	Duplicate  bool   `json:"duplicate,omitempty"`
+	Total      int64  `json:"total,omitempty"`
+	Page       int    `json:"page,omitempty"`
+	Limit      int    `json:"limit,omitempty"`
+	TotalPages int    `json:"total_pages,omitempty"`
 }
 
 func Success(ctx *gin.Context, message string, data ...any) {
@@ -31,6 +34,40 @@ func Success(ctx *gin.Context, message string, data ...any) {
 
 	ctx.JSON(http.StatusOK, response)
 }
+
+func SuccessWithPagination(
+	ctx *gin.Context,
+	message string,
+	data any,
+	total *int64,
+	page, limit *int,
+) {
+	response := Response{
+		Message: message,
+		Status:  true,
+		Code:    http.StatusOK,
+	}
+
+	if data != nil {
+		response.Data = data
+	}
+
+	if total != nil {
+		response.Total = *total
+	}
+	if page != nil {
+		response.Page = *page
+	}
+	if limit != nil {
+		response.Limit = *limit
+		if total != nil && *limit > 0 {
+			response.TotalPages = int(math.Ceil(float64(*total) / float64(*limit)))
+		}
+	}
+
+	ctx.JSON(http.StatusOK, response)
+}
+
 func Created(ctx *gin.Context, message string, data any) {
 	ctx.JSON(http.StatusCreated, Response{
 		Message: message,
@@ -66,6 +103,7 @@ func NotFound(ctx *gin.Context, err error) {
 		Message: err.Error(),
 		Status:  false,
 		Code:    http.StatusNotFound,
+		Data:    []any{},
 	})
 }
 
@@ -85,15 +123,21 @@ func InternalError(ctx *gin.Context, err error) {
 		Code:    http.StatusInternalServerError,
 	})
 }
-
-func Paginated(ctx *gin.Context, message string, data any, total, offset, limit int) {
+func Unauthorized(ctx *gin.Context, err error) {
+	ctx.JSON(http.StatusUnauthorized, Response{
+		Message: err.Error(),
+		Status:  false,
+		Code:    http.StatusUnauthorized,
+	})
+}
+func Paginated(ctx *gin.Context, message string, data any, total int64, offset, limit int) {
 	ctx.JSON(http.StatusOK, Response{
 		Message: message,
 		Status:  true,
 		Code:    http.StatusOK,
 		Data:    data,
 		Total:   total,
-		Offset:  offset,
+		Page:    offset,
 		Limit:   limit,
 	})
 }
