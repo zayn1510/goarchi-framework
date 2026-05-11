@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/zayn1510/goarchi/config"
 )
 
 const (
@@ -21,8 +22,10 @@ const (
 )
 
 var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
-var expiredtoken = time.Hour * time.Duration(getEnv("JWT_EXPIRED_TOKEN", "5"))
 
+func GetExpiredDuration() time.Duration {
+	return config.JWTExpired
+}
 func getEnv(key, defaultValue string) int {
 	val, exists := os.LookupEnv(key)
 	if !exists {
@@ -44,19 +47,21 @@ func validateToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 		return secretKey, nil
 	})
 
-	// Ambil claims
+	if err != nil || !token.Valid {
+		return nil, nil, fmt.Errorf(ErrInvalidToken)
+	}
+
+	// Baru akses claims
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return nil, nil, fmt.Errorf(ErrInvalidClaims)
 	}
-	// Cek apakah token sudah expired
+
+	// Expired sudah otomatis dicek jwt.Parse, tapi boleh tetap eksplisit
 	if exp, ok := claims["exp"].(float64); ok {
 		if time.Now().Unix() > int64(exp) {
 			return nil, nil, fmt.Errorf(ErrTokenExpired)
 		}
-	}
-	if err != nil || !token.Valid {
-		return nil, nil, fmt.Errorf(ErrInvalidToken)
 	}
 
 	return token, claims, nil
@@ -91,14 +96,16 @@ func JWTMiddleware() gin.HandlerFunc {
 
 		// Simpan username ke context untuk digunakan di handler
 		c.Set("username", claims["username"])
+		c.Set("user_id", claims["user_id"])
 		c.Next()
 	}
 }
 
-func GenerateJWT(username string) (string, error) {
+func GenerateJWT(userID int64, username string) (string, error) {
 	claims := jwt.MapClaims{
+		"user_id":  userID,
 		"username": username,
-		"exp":      time.Now().Add(expiredtoken).Unix(), // Token berlaku 24 jam
+		"exp":      time.Now().Add(config.JWTExpired).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

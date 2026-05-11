@@ -12,16 +12,14 @@ import (
 	"time"
 )
 
-// generate controller
 var makeControllerCmd = &cobra.Command{
 	Use:   "controller [name]",
 	Short: "Generate a new controller",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		path := strings.ToLower(args[0])
-
 		parts := strings.Split(path, "/")
-		name := parts[len(parts)-1] // "user"
+		name := parts[len(parts)-1]
 
 		structName := strings.Title(name) + "Controller"
 		filePath := fmt.Sprintf("app/controllers/%s_controller.go", path)
@@ -30,17 +28,14 @@ var makeControllerCmd = &cobra.Command{
 			fmt.Println("Failed to execute template:", err)
 			return
 		}
-		content := buf
 
-		// Buat folder-nya dulu kalau belum ada
 		dir := "app/controllers/" + strings.Join(parts[:len(parts)-1], "/")
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			fmt.Println("Failed to create folder", err)
+			fmt.Println("Failed to create folder:", err)
 			return
 		}
-		// Simpan file
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-			fmt.Println("Failed to create controller", err)
+		if err := os.WriteFile(filePath, []byte(buf), 0644); err != nil {
+			fmt.Println("Failed to create controller:", err)
 			return
 		}
 
@@ -57,9 +52,8 @@ var makeServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		path := strings.ToLower(args[0])
-
 		parts := strings.Split(path, "/")
-		name := parts[len(parts)-1] // "user"
+		name := parts[len(parts)-1]
 
 		structName := strings.Title(name) + "Service"
 		filePath := fmt.Sprintf("app/services/%s_service.go", path)
@@ -68,15 +62,14 @@ var makeServiceCmd = &cobra.Command{
 			fmt.Println("Failed to execute template:", err)
 			return
 		}
-		// Buat folder-nya dulu kalau belum ada
+
 		dir := "app/services/" + strings.Join(parts[:len(parts)-1], "/")
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			fmt.Println("Gagal membuat folder:", err)
+			fmt.Println("Failed to create folder:", err)
 			return
 		}
-		// Simpan file
 		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-			fmt.Println("Gagal membuat service:", err)
+			fmt.Println("Failed to create service:", err)
 			return
 		}
 
@@ -87,48 +80,46 @@ var makeServiceCmd = &cobra.Command{
 	},
 }
 
-// generate request
 var makeRequestCmd = &cobra.Command{
 	Use:   "request [name] [fields]",
 	Short: "Generate a new request with optional fields",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		path := strings.ToLower(args[0]) // Misalnya: users/user
-		// Ambil nama terakhir untuk nama struct
+		path := strings.ToLower(args[0])
 		parts := strings.Split(path, "/")
-		name := parts[len(parts)-1] // "user"
+		name := parts[len(parts)-1]
 
 		structName := strings.Title(name) + "Request"
 		filePath := fmt.Sprintf("app/requests/%s_request.go", path)
 
-		// Parsing fields
 		var fieldsBuilder strings.Builder
 		for _, fieldArg := range args[1:] {
 			parts := strings.Split(fieldArg, ":")
 			if len(parts) != 2 {
-				fmt.Printf("Field '%s' tidak valid. Gunakan format name:type\n", fieldArg)
+				fmt.Printf("Invalid field '%s'. Use format name:type\n", fieldArg)
 				return
 			}
 			fieldName := strings.Title(parts[0])
 			fieldType := parts[1]
 			fieldsBuilder.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\" validate:\"required\"`\n", fieldName, fieldType, parts[0]))
 		}
+
 		content, err := tools.GenerateRequest(structName, fieldsBuilder)
 		if err != nil {
 			fmt.Println("Failed to execute template:", err)
 			return
 		}
+
 		dir := "app/requests/" + strings.Join(parts[:len(parts)-1], "/")
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			fmt.Println("Gagal membuat folder:", err)
+			fmt.Println("Failed to create folder:", err)
+			return
+		}
+		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+			fmt.Println("Failed to create request:", err)
 			return
 		}
 
-		// Simpan file
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-			fmt.Println("Gagal membuat request:", err)
-			return
-		}
 		fmt.Printf("%s\n  → %s\n",
 			color.HiGreenString("✅ Request created successfully!"),
 			color.YellowString(filePath),
@@ -136,7 +127,6 @@ var makeRequestCmd = &cobra.Command{
 	},
 }
 
-// generate resource
 var makeResourceCmd = &cobra.Command{
 	Use:   "resource [name] [fields]",
 	Short: "Generate a new resource with optional fields",
@@ -149,12 +139,11 @@ var makeResourceCmd = &cobra.Command{
 		structName := strings.Title(name) + "Resource"
 		filePath := fmt.Sprintf("app/resources/%s_resource.go", path)
 
-		// Parsing fields
 		var fieldsBuilder strings.Builder
 		for _, fieldArg := range args[1:] {
 			parts := strings.Split(fieldArg, ":")
 			if len(parts) != 2 {
-				fmt.Printf("Field '%s' tidak valid. Gunakan format name:type\n", fieldArg)
+				fmt.Printf("Invalid field '%s'. Use format name:type\n", fieldArg)
 				return
 			}
 			fieldName := strings.Title(parts[0])
@@ -167,20 +156,19 @@ var makeResourceCmd = &cobra.Command{
 			fmt.Println("Failed to execute template:", err)
 			return
 		}
+
 		dir := "app/resources/" + strings.Join(parts[:len(parts)-1], "/")
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			fmt.Println("Gagal membuat folder:", err)
+			fmt.Println("Failed to create folder:", err)
 			return
 		}
-
-		// Simpan file
 		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-			fmt.Println("Gagal membuat resource:", err)
+			fmt.Println("Failed to create resource:", err)
 			return
 		}
 
 		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Request created successfully!"),
+			color.HiGreenString("✅ Resource created successfully!"),
 			color.YellowString(filePath),
 		)
 	},
@@ -198,32 +186,29 @@ var makeModelCmd = &cobra.Command{
 
 		dir := "app/models/" + strings.Join(parts[:len(parts)-1], "/")
 		filePath := fmt.Sprintf("%s/%s.go", dir, name)
-		var fieldsBuilder strings.Builder
 
+		var fieldsBuilder strings.Builder
 		for _, fieldArg := range args[1:] {
 			parts := strings.Split(fieldArg, ":")
 			if len(parts) < 2 {
-				fmt.Printf("Field '%s' tidak valid. Gunakan format name:type;tag1;tag2 atau Struct:foreignKey:Field\n", fieldArg)
+				fmt.Printf("Invalid field '%s'. Use format name:type;tag1;tag2 or Struct:foreignKey:Field\n", fieldArg)
 				return
 			}
 
 			if strings.ToUpper(parts[0][:1]) == parts[0][:1] && parts[1] == "foreignKey" {
 				structName := parts[0]
 				foreignKey := parts[2]
-
 				fieldsBuilder.WriteString(fmt.Sprintf("\t%s %s `gorm:\"foreignKey:%s\"`\n", structName, structName, foreignKey))
 				continue
 			}
 
-			// Field biasa
 			fieldName := strings.Title(parts[0])
 			tagParts := strings.Split(parts[1], ";")
 			fieldType := tagParts[0]
 			gormTags := strings.Join(tagParts[1:], ";")
-
 			jsonTag := strings.ToLower(parts[0])
-			var tagBuilder strings.Builder
 
+			var tagBuilder strings.Builder
 			if gormTags != "" {
 				tagBuilder.WriteString(fmt.Sprintf("gorm:\"%s\" ", gormTags))
 			}
@@ -233,19 +218,18 @@ var makeModelCmd = &cobra.Command{
 		}
 		fieldsBuilder.WriteString("\tCreatedAt time.Time `json:\"created_at\"`\n")
 		fieldsBuilder.WriteString("\tUpdatedAt time.Time `json:\"updated_at\"`\n")
+
 		content, err := tools.GenerateModel(structName, fieldsBuilder)
 		if err != nil {
-			fmt.Println("Gagal membuat model:", err)
+			fmt.Println("Failed to create model:", err)
 			return
 		}
-
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			fmt.Println("Gagal membuat folder:", err)
+			fmt.Println("Failed to create folder:", err)
 			return
 		}
-
 		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-			fmt.Println("Gagal membuat model:", err)
+			fmt.Println("Failed to create model:", err)
 			return
 		}
 
@@ -255,6 +239,7 @@ var makeModelCmd = &cobra.Command{
 		)
 	},
 }
+
 var makeMigrationCmd = &cobra.Command{
 	Use:   "migration [name]",
 	Short: "Generate a new migration file",
@@ -263,27 +248,28 @@ var makeMigrationCmd = &cobra.Command{
 		name := args[0]
 		timestamp := time.Now().Format("20060102150405")
 		fileName := fmt.Sprintf("database/migrations/%s_%s.go", timestamp, name)
+
 		content, err := tools.GenerateMigration()
 		if err != nil {
 			fmt.Println("Failed to execute template:", err)
-		}
-
-		if err := os.MkdirAll("database/migrations", os.ModePerm); err != nil {
-			fmt.Println("Gagal membuat folder:", err)
 			return
 		}
-
+		if err := os.MkdirAll("database/migrations", os.ModePerm); err != nil {
+			fmt.Println("Failed to create folder:", err)
+			return
+		}
 		if err := os.WriteFile(fileName, []byte(content), 0644); err != nil {
-			fmt.Println("Gagal membuat migration:", err)
+			fmt.Println("Failed to create migration:", err)
 			return
 		}
 
 		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ migration created successfully!"),
+			color.HiGreenString("✅ Migration created successfully!"),
 			color.YellowString(fileName),
 		)
 	},
 }
+
 var migrateCmd = &cobra.Command{
 	Use:   "migrate [direction]",
 	Short: "Run migrations (up or down)",
@@ -291,27 +277,28 @@ var migrateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		direction := args[0]
 
-		// Connect DB (ubah sesuai config project kamu)
+		if direction != "up" && direction != "down" {
+			fmt.Println("Invalid direction. Use 'up' or 'down'.")
+			return
+		}
+
 		db := config.GetDB()
 
 		for _, migration := range migrations.AllMigrations {
-			fmt.Println("Migrasi:", migration.Name)
+			fmt.Println("Running migration:", migration.Name)
 
 			var migErr error
 			if direction == "up" {
 				migErr = migration.Up(db)
-			} else if direction == "down" {
-				migErr = migration.Down(db)
 			} else {
-				fmt.Println("Gunakan 'up' atau 'down'")
-				return
+				migErr = migration.Down(db)
 			}
 
 			if migErr != nil {
-				fmt.Println("Gagal:", migErr)
+				fmt.Println("Failed:", migErr)
 				return
 			}
-			fmt.Println("Sukses:", migration.Name)
+			fmt.Println("Done:", migration.Name)
 		}
 	},
 }
