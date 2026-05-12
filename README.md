@@ -189,13 +189,15 @@ goarchi make migration create_users_table
 
 #### 🧬 Migrate (Run)
 ```bash
-goarchi make migrate up
-goarchi make migrate down
+go run main.go migrate up
+go run main.go migrate down
 ```
 Runs all migrations registered in `database/migrations/migrations_list.go`.
 
 - `up` — applies all migrations in `AllMigrations`
 - `down` — rolls back all migrations in `AllMigrations`
+
+> ⚠️ Migrate is run via `go run main.go` inside your project, not from the `goarchi` binary. This is because Go compiles to a static binary and cannot access migration files added after build time.
 
 ---
 
