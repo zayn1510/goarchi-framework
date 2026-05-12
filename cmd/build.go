@@ -5,21 +5,27 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
+	"strings"
 )
 
 func RunInstall() {
 
-	binaryName := "goarchi"
+	if !isGoCompatible() {
+		fmt.Println("❌ Go 1.26+ required to build Goarchi")
+		fmt.Println("Current:", runtime.Version())
+		return
+	}
 
-	// Windows binary extension
+	binaryName := "goarchi"
 	if runtime.GOOS == "windows" {
 		binaryName += ".exe"
 	}
 
 	fmt.Println("📦 Building Goarchi binary...")
 
-	// Build binary
-	cmd := exec.Command("go", "build", "-o", binaryName, "cli/main.go")
+	cmd := exec.Command("go", "build", "-ldflags",
+		"-X 'main.Version=dev'", "-o", binaryName, "cli/main.go")
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -30,46 +36,46 @@ func RunInstall() {
 	}
 
 	fmt.Println("\n✅ Binary generated successfully!")
+	fmt.Println("Go version used:", runtime.Version())
 
-	// =========================
-	// INSTALLATION GUIDE
-	// =========================
+	printInstallGuide(binaryName)
+}
 
+func isGoCompatible() bool {
+	version := runtime.Version()
+	if !strings.HasPrefix(version, "go") {
+		return false
+	}
+
+	v := strings.TrimPrefix(version, "go")
+
+	parts := strings.Split(v, ".")
+	if len(parts) < 2 {
+		return false
+	}
+
+	majorMinor := parts[0] + "." + parts[1]
+
+	f, err := strconv.ParseFloat(majorMinor, 64)
+	if err != nil {
+		return false
+	}
+
+	// minimum Go 1.26
+	return f >= 1.26
+}
+func printInstallGuide(binaryName string) {
 	switch runtime.GOOS {
 
 	case "windows":
-
 		fmt.Println("\n📌 Windows Installation")
-		fmt.Println("Move goarchi.exe to a folder inside your PATH.")
-		fmt.Println("\nExample:")
-		fmt.Println("C:\\Users\\YourUser\\go\\bin")
+		fmt.Println("Move binary to PATH (e.g. C:\\Users\\<user>\\go\\bin)")
 
-		fmt.Println("\nThen verify:")
-		fmt.Println("goarchi version")
-
-	case "darwin":
-
-		fmt.Println("\n📌 macOS Installation")
-		fmt.Println("Run the following command:")
-
-		fmt.Printf("\nsudo mv %s /usr/local/bin/goarchi\n", binaryName)
-
-		fmt.Println("\nThen verify:")
-		fmt.Println("goarchi version")
-
-	case "linux":
-
-		fmt.Println("\n📌 Linux Installation")
-		fmt.Println("Run the following command:")
-
-		fmt.Printf("\nsudo mv %s /usr/local/bin/goarchi\n", binaryName)
-
-		fmt.Println("\nThen verify:")
-		fmt.Println("goarchi version")
+	case "darwin", "linux":
+		fmt.Println("\n📌 Unix Installation")
+		fmt.Printf("sudo mv %s /usr/local/bin/goarchi\n", binaryName)
 
 	default:
-
-		fmt.Println("\n⚠️ Unsupported OS detected.")
-		fmt.Println("Please move the binary manually to your system PATH.")
+		fmt.Println("\n⚠️ Manual install required")
 	}
 }
