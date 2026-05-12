@@ -6,6 +6,12 @@ Goarchi is a CLI tool that helps you scaffold a clean, layered Go project struct
 
 ---
 
+## 📋 Requirements
+
+- Go `1.26.3` or higher
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Create a new project
@@ -189,15 +195,34 @@ goarchi make migration create_users_table
 
 #### 🧬 Migrate (Run)
 ```bash
-go run main.go migrate up
-go run main.go migrate down
+go run cli/main.go migrate up
+go run cli/main.go migrate down
 ```
 Runs all migrations registered in `database/migrations/migrations_list.go`.
 
 - `up` — applies all migrations in `AllMigrations`
 - `down` — rolls back all migrations in `AllMigrations`
 
-> ⚠️ Migrate is run via `go run main.go` inside your project, not from the `goarchi` binary. This is because Go compiles to a static binary and cannot access migration files added after build time.
+> ⚠️ Migrate is run via `go run cli/main.go` not from the `goarchi` binary. This is because Go compiles to a static binary and cannot access migration files added after build time.
+
+---
+
+#### 🔍 Check Vulnerabilities
+```bash
+goarchi govulncheck
+```
+or
+```bash
+go run cli/main.go govulncheck
+```
+
+Automatically installs/updates `govulncheck` and scans all dependencies for known vulnerabilities.
+
+If vulnerabilities are found, fix them by running:
+```bash
+go get -u ./...
+go mod tidy
+```
 
 ---
 
@@ -211,7 +236,7 @@ Interactive wizard that generates all Docker configuration files for your projec
 
 **Prompts:**
 
-1. **Go Version** — `1.22`, `1.23`, or `latest`
+1. **Go Version** — `1.24`, `1.25`, `1.26`, or `latest`
 2. **Database** — PostgreSQL or MySQL
 3. **Air Hot Reload** — yes or no
 4. **Nginx** — use as reverse proxy or skip
@@ -234,8 +259,8 @@ Interactive wizard that generates all Docker configuration files for your projec
 🐳 Goarchi Docker Setup
 ========================
 Choose Go Version:
-1. 1.22  2. 1.23  3. latest
-Enter choice (1-3): 2
+1. 1.24  2. 1.25  3. 1.26  4. latest
+Enter choice (1-4): 3
 
 Choose Database:
 1. PostgreSQL  2. MySQL
@@ -294,17 +319,18 @@ Enter your app name: myapp
 │   └── main.go            # CLI entry point (for building binary)
 ├── cmd/                   # Cobra CLI commands
 ├── config/                # App & database configuration
+├── console/               # Project CLI commands (migrate, dbcheck)
 ├── core/
 │   ├── generate/          # Code generator
 │   │   └── templates/     # .tmpl files for each layer
 │   └── tools/             # Utility helpers
 ├── database/
-│   └── migrations/        # SQL migration files
+│   └── migrations/        # Migration files & registry
 ├── routers/
 │   └── web.go             # Route definitions
 ├── public/                # Static files
 ├── main.go                # App entry point
-└── config.yaml            # App configuration
+└── .env.example           # Environment variable template
 ```
 
 ---
@@ -329,7 +355,7 @@ APP_PORT=8080
 # DATABASE
 # ======================
 DB_CONNECTION=postgres   # postgres or mysql
-DB_HOST=db
+DB_HOST=127.0.0.1
 DB_PORT=5432             # 5432 for postgres, 3306 for mysql
 DB_NAME=dbname
 DB_USER=dbuser
