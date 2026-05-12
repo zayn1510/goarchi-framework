@@ -51,8 +51,8 @@ var rootCmd = &cobra.Command{
 		color.HiGreenString("🗃️  Migration:\n  goarchi make migration [name]")+
 			"\n    → Generate a migration file in 'database/migrations'",
 
-		color.HiGreenString("🧬 Migrate:\n  goarchi make migrate [up|down]")+
-			"\n    → 'up' applies migrations, 'down' rolls them back",
+		color.HiGreenString("🧬 Migrate:\n  go run main.go migrate [up|down]")+
+			"\n    → 'up' applies migrations, 'down' rolls them back\n    → Run inside your project, not from the binary",
 
 		color.HiCyanString("🐳 Docker Setup:\n  goarchi docker:init")+
 			"\n    → Interactive wizard to generate Dockerfile.dev, docker-compose.yml, nginx config, and install.sh",
