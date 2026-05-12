@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/zayn1510/goarchi/config"
 	"github.com/zayn1510/goarchi/core/tools"
-	"github.com/zayn1510/goarchi/database/migrations"
 	"os"
 	"strings"
 	"time"
@@ -270,39 +268,6 @@ var makeMigrationCmd = &cobra.Command{
 	},
 }
 
-var migrateCmd = &cobra.Command{
-	Use:   "migrate [direction]",
-	Short: "Run migrations (up or down)",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		direction := args[0]
-
-		if direction != "up" && direction != "down" {
-			fmt.Println("Invalid direction. Use 'up' or 'down'.")
-			return
-		}
-
-		db := config.GetDB()
-
-		for _, migration := range migrations.AllMigrations {
-			fmt.Println("Running migration:", migration.Name)
-
-			var migErr error
-			if direction == "up" {
-				migErr = migration.Up(db)
-			} else {
-				migErr = migration.Down(db)
-			}
-
-			if migErr != nil {
-				fmt.Println("Failed:", migErr)
-				return
-			}
-			fmt.Println("Done:", migration.Name)
-		}
-	},
-}
-
 func init() {
 	makeCmd.AddCommand(makeControllerCmd)
 	makeCmd.AddCommand(makeServiceCmd)
@@ -310,5 +275,4 @@ func init() {
 	makeCmd.AddCommand(makeResourceCmd)
 	makeCmd.AddCommand(makeModelCmd)
 	makeCmd.AddCommand(makeMigrationCmd)
-	makeCmd.AddCommand(migrateCmd)
 }
