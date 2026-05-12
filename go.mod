@@ -1,6 +1,6 @@
 module github.com/zayn1510/goarchi
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/fatih/color v1.19.0

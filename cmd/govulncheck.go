@@ -17,22 +17,17 @@ var govulncheckCmd = &cobra.Command{
 		color.Cyan("[INFO] Checking for vulnerabilities in dependencies...")
 		fmt.Println("")
 
-		// cek apakah govulncheck sudah terinstall
-		if _, err := exec.LookPath("govulncheck"); err != nil {
-			color.Yellow("[WARN] govulncheck is not installed.")
-			fmt.Println("Installing govulncheck...")
-			fmt.Println("")
-
-			install := exec.Command("go", "install", "golang.org/x/vuln/cmd/govulncheck@latest")
-			install.Stdout = os.Stdout
-			install.Stderr = os.Stderr
-			if err := install.Run(); err != nil {
-				color.Red("❌ Failed to install govulncheck: %v", err)
-				return
-			}
-			color.Green("[OK] govulncheck installed successfully!")
-			fmt.Println("")
+		// selalu reinstall govulncheck biar sesuai versi Go yang aktif
+		color.Cyan("[INFO] Installing/updating govulncheck...")
+		install := exec.Command("go", "install", "golang.org/x/vuln/cmd/govulncheck@latest")
+		install.Stdout = os.Stdout
+		install.Stderr = os.Stderr
+		if err := install.Run(); err != nil {
+			color.Red("❌ Failed to install govulncheck: %v", err)
+			return
 		}
+		color.Green("[OK] govulncheck ready.")
+		fmt.Println("")
 
 		// jalankan govulncheck
 		check := exec.Command("govulncheck", "./...")
