@@ -20,20 +20,39 @@ var dockerInitCmd = &cobra.Command{
 
 		// GO VERSION
 		fmt.Println("Choose Go Version:")
-		fmt.Println("1. 1.22")
-		fmt.Println("2. 1.23")
-		fmt.Println("3. latest")
-		fmt.Print("Enter choice (1-3): ")
+		fmt.Println("1. 1.26  ✅ minimum required")
+		fmt.Println("2. 1.27")
+		fmt.Println("3. latest (recommended)")
+		fmt.Println("4. custom (enter manually)")
+		fmt.Print("Enter choice (1-4): ")
 		goChoice, _ := reader.ReadString('\n')
 		goChoice = strings.TrimSpace(goChoice)
 		goVersion := "latest"
 		switch goChoice {
 		case "1":
-			goVersion = "1.22"
+			goVersion = "1.26"
 		case "2":
-			goVersion = "1.23"
+			goVersion = "1.27"
 		case "3":
 			goVersion = "latest"
+		case "4":
+			fmt.Print("Enter Go version (e.g. 1.25): ")
+			customVersion, _ := reader.ReadString('\n')
+			customVersion = strings.TrimSpace(customVersion)
+			goVersion = customVersion
+			if customVersion < "1.26" {
+				fmt.Println("")
+				fmt.Println("⚠️  WARNING: Go versions below 1.26 have known vulnerabilities in the standard library.")
+				fmt.Println("   It is strongly recommended to use Go 1.26.3 or higher.")
+				fmt.Print("   Continue anyway? (y/n): ")
+				confirm, _ := reader.ReadString('\n')
+				if strings.TrimSpace(strings.ToLower(confirm)) != "y" {
+					fmt.Println("Aborted. Please choose a newer Go version.")
+					return
+				}
+				fmt.Println("⚠️  Proceeding with vulnerable Go version. Use at your own risk.")
+				fmt.Println("")
+			}
 		}
 
 		// DATABASE
@@ -187,9 +206,6 @@ func generateCompose(database string, appName string, useNginx bool, dbGui strin
 
 	b.WriteString("services:\n")
 
-	// =========================
-	// APP
-	// =========================
 	b.WriteString(fmt.Sprintf(`
   # =========================
   # GO APP
@@ -221,9 +237,6 @@ func generateCompose(database string, appName string, useNginx bool, dbGui strin
       - JWT_EXPIRED_TOKEN=${JWT_EXPIRED_TOKEN}
 `, appName, appName, database))
 
-	// =========================
-	// NGINX
-	// =========================
 	if useNginx {
 		b.WriteString(fmt.Sprintf(`
   # =========================
@@ -244,9 +257,6 @@ func generateCompose(database string, appName string, useNginx bool, dbGui strin
 `, appName, appName))
 	}
 
-	// =========================
-	// DATABASE
-	// =========================
 	if database == "mysql" {
 		b.WriteString(fmt.Sprintf(`
   # =========================
@@ -290,9 +300,6 @@ func generateCompose(database string, appName string, useNginx bool, dbGui strin
 `, appName, appName, appName))
 	}
 
-	// =========================
-	// DB GUI
-	// =========================
 	if dbGui == "phpmyadmin" {
 		b.WriteString(fmt.Sprintf(`
   # =========================
@@ -331,9 +338,6 @@ func generateCompose(database string, appName string, useNginx bool, dbGui strin
 `, appName, appName))
 	}
 
-	// =========================
-	// VOLUMES & NETWORKS
-	// =========================
 	b.WriteString(fmt.Sprintf(`
 # =========================
 # VOLUMES
