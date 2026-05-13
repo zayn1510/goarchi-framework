@@ -31,10 +31,8 @@ func getEnv(key, defaultValue string) int {
 	if !exists {
 		val = defaultValue
 	}
-	// Konversi string ke int
 	result, err := strconv.Atoi(val)
 	if err != nil {
-		// Jika gagal konversi, gunakan default (5)
 		return 5
 	}
 	return result
@@ -51,13 +49,11 @@ func validateToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 		return nil, nil, fmt.Errorf(ErrInvalidToken)
 	}
 
-	// Baru akses claims
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return nil, nil, fmt.Errorf(ErrInvalidClaims)
 	}
 
-	// Expired sudah otomatis dicek jwt.Parse, tapi boleh tetap eksplisit
 	if exp, ok := claims["exp"].(float64); ok {
 		if time.Now().Unix() > int64(exp) {
 			return nil, nil, fmt.Errorf(ErrTokenExpired)
@@ -67,7 +63,6 @@ func validateToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	return token, claims, nil
 }
 
-// Middleware JWT untuk Gin
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -77,7 +72,6 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Token harus dalam format "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidFormat})
@@ -86,7 +80,6 @@ func JWTMiddleware() gin.HandlerFunc {
 		}
 		tokenString := parts[1]
 
-		// Validasi token
 		_, claims, err := validateToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -94,7 +87,6 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Simpan username ke context untuk digunakan di handler
 		c.Set("username", claims["username"])
 		c.Set("user_id", claims["user_id"])
 		c.Next()
@@ -106,6 +98,16 @@ func GenerateJWT(userID int64, username string) (string, error) {
 		"user_id":  userID,
 		"username": username,
 		"exp":      time.Now().Add(config.JWTExpired).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(secretKey)
+}
+
+func GenerateRefreshToken(userID int64) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
