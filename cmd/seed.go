@@ -77,3 +77,7 @@ var seedCmd = &cobra.Command{
 		}
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(seedCmd)
+}
