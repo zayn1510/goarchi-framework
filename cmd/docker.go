@@ -42,7 +42,7 @@ var dockerInitCmd = &cobra.Command{
 			goVersion = customVersion
 			if customVersion < "1.26" {
 				fmt.Println("")
-				fmt.Println("⚠️  WARNING: Go versions below 1.26 have known vulnerabilities in the standard library.")
+				fmt.Println(" WARNING: Go versions below 1.26 have known vulnerabilities in the standard library.")
 				fmt.Println("   It is strongly recommended to use Go 1.26.3 or higher.")
 				fmt.Print("   Continue anyway? (y/n): ")
 				confirm, _ := reader.ReadString('\n')
@@ -50,7 +50,7 @@ var dockerInitCmd = &cobra.Command{
 					fmt.Println("Aborted. Please choose a newer Go version.")
 					return
 				}
-				fmt.Println("⚠️  Proceeding with vulnerable Go version. Use at your own risk.")
+				fmt.Println(" Proceeding with vulnerable Go version. Use at your own risk.")
 				fmt.Println("")
 			}
 		}
@@ -117,37 +117,37 @@ var dockerInitCmd = &cobra.Command{
 
 		// GENERATE FILES
 		if err := os.WriteFile("Dockerfile.dev", []byte(generateDockerfile(goVersion, useAir)), 0644); err != nil {
-			fmt.Println("❌ Failed to generate Dockerfile.dev:", err)
+			fmt.Println("Failed to generate Dockerfile.dev:", err)
 			return
 		}
 		if err := os.WriteFile("docker-compose.yml", []byte(generateCompose(database, appName, useNginx, dbGui)), 0644); err != nil {
-			fmt.Println("❌ Failed to generate docker-compose.yml:", err)
+			fmt.Println("Failed to generate docker-compose.yml:", err)
 			return
 		}
 		if useNginx {
 			if err := os.MkdirAll("nginx", os.ModePerm); err != nil {
-				fmt.Println("❌ Failed to create nginx folder:", err)
+				fmt.Println("Failed to create nginx folder:", err)
 				return
 			}
 			if err := os.WriteFile("nginx/default.conf", []byte(generateNginxConf()), 0644); err != nil {
-				fmt.Println("❌ Failed to generate nginx/default.conf:", err)
+				fmt.Println("Failed to generate nginx/default.conf:", err)
 				return
 			}
 		}
 		if err := os.WriteFile("install.sh", []byte(generateInstallScript(database, appName, useNginx, dbGui)), 0755); err != nil {
-			fmt.Println("❌ Failed to generate install.sh:", err)
+			fmt.Println("Failed to generate install.sh:", err)
 			return
 		}
 
-		fmt.Println("\n✅ Docker configuration generated successfully!")
-		fmt.Println("📄 Dockerfile.dev")
-		fmt.Println("📄 docker-compose.yml")
+		fmt.Println("\nDocker configuration generated successfully!")
+		fmt.Println("Dockerfile.dev")
+		fmt.Println("docker-compose.yml")
 		if useNginx {
-			fmt.Println("📄 nginx/default.conf")
+			fmt.Println("nginx/default.conf")
 		}
-		fmt.Println("📄 install.sh")
+		fmt.Println("install.sh")
 		fmt.Println("")
-		fmt.Printf("🔖 Container names:\n")
+		fmt.Printf(" Container names:\n")
 		fmt.Printf("   App : %s_api\n", appName)
 		fmt.Printf("   DB  : %s_db\n", appName)
 		if useNginx {
@@ -157,7 +157,7 @@ var dockerInitCmd = &cobra.Command{
 			fmt.Printf("   DB GUI (%s) : %s_gui\n", dbGui, appName)
 		}
 		fmt.Println("")
-		fmt.Println("▶️  To deploy, run: bash install.sh")
+		fmt.Println(" To deploy, run: bash install.sh")
 	},
 }
 

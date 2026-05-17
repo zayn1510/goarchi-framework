@@ -12,7 +12,7 @@ import (
 func RunInstall() {
 
 	if !isGoCompatible() {
-		fmt.Println("❌ Go 1.26+ required to build Goarchi")
+		fmt.Println("Go 1.26+ required to build Goarchi")
 		fmt.Println("Current:", runtime.Version())
 		return
 	}
@@ -22,7 +22,7 @@ func RunInstall() {
 		binaryName += ".exe"
 	}
 
-	fmt.Println("📦 Building Goarchi binary...")
+	fmt.Println("Building Goarchi binary...")
 
 	cmd := exec.Command("go", "build", "-ldflags",
 		"-X 'main.Version=dev'", "-o", binaryName, "cli/main.go")
@@ -31,11 +31,11 @@ func RunInstall() {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Println("❌ Failed to build binary:", err)
+		fmt.Println("Failed to build binary:", err)
 		return
 	}
 
-	fmt.Println("\n✅ Binary generated successfully!")
+	fmt.Println("\nBinary generated successfully!")
 	fmt.Println("Go version used:", runtime.Version())
 
 	printInstallGuide(binaryName)
@@ -68,14 +68,14 @@ func printInstallGuide(binaryName string) {
 	switch runtime.GOOS {
 
 	case "windows":
-		fmt.Println("\n📌 Windows Installation")
+		fmt.Println("\nWindows Installation")
 		fmt.Println("Move binary to PATH (e.g. C:\\Users\\<user>\\go\\bin)")
 
 	case "darwin", "linux":
-		fmt.Println("\n📌 Unix Installation")
+		fmt.Println("\nUnix Installation")
 		fmt.Printf("sudo mv %s /usr/local/bin/goarchi\n", binaryName)
 
 	default:
-		fmt.Println("\n⚠️ Manual install required")
+		fmt.Println("\nManual install required")
 	}
 }

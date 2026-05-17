@@ -180,3 +180,26 @@ func SaveResizedImage(fileHeader *multipart.FileHeader, saveDir string) (string,
 
 	return fileName, nil
 }
+
+
+func GenerateSeeder(funcName string) (string, error) {
+	templatePath := "core/generate/templates/seeder.tmpl"
+
+	tpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return "", err
+	}
+
+	data := struct {
+		FuncName string
+	}{
+		FuncName: funcName,
+	}
+
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, data)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
