@@ -14,9 +14,8 @@ var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Check Goarchi environment health",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		fmt.Println("")
-		color.Cyan("🩺 Goarchi Doctor - Environment Check")
+		color.Cyan("Goarchi Doctor - Environment Check")
 		fmt.Println("")
 
 		checkGoVersion()
@@ -27,7 +26,7 @@ var doctorCmd = &cobra.Command{
 }
 
 func checkGoVersion() {
-	fmt.Println("🔍 Checking Go version...")
+	fmt.Println("Checking Go version...")
 
 	v := runtime.Version()
 	fmt.Println("Go version:", v)
@@ -41,7 +40,7 @@ func checkGoVersion() {
 }
 
 func checkTool(name string) {
-	fmt.Printf("\n🔍 Checking %s...\n", name)
+	fmt.Printf("Checking %s...\n", name)
 
 	_, err := exec.LookPath(name)
 	if err != nil {
@@ -54,7 +53,7 @@ func checkTool(name string) {
 }
 
 func checkGoMod() {
-	fmt.Println("\n🔍 Checking go.mod...")
+	fmt.Println("Checking go.mod...")
 
 	if _, err := os.Stat("go.mod"); err != nil {
 		color.Red("go.mod not found")
