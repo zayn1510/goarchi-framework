@@ -33,11 +33,11 @@ func checkGoVersion() {
 	fmt.Println("Go version:", v)
 
 	if !isGoCompatible() {
-		color.Red("❌ Go version too old (requires 1.26+)")
+		color.Red("Go version too old (requires 1.26+)")
 		return
 	}
 
-	color.Green("✅ Go version OK")
+	color.Green("Go version OK")
 }
 
 func checkTool(name string) {
@@ -45,30 +45,30 @@ func checkTool(name string) {
 
 	_, err := exec.LookPath(name)
 	if err != nil {
-		color.Red("❌ %s not found", name)
+		color.Red("%s not found", name)
 		fmt.Println("   Run: go install golang.org/x/vuln/cmd/govulncheck@latest")
 		return
 	}
 
-	color.Green("✅ %s installed", name)
+	color.Green("%s installed", name)
 }
 
 func checkGoMod() {
 	fmt.Println("\n🔍 Checking go.mod...")
 
 	if _, err := os.Stat("go.mod"); err != nil {
-		color.Red("❌ go.mod not found")
+		color.Red("go.mod not found")
 		return
 	}
 
-	color.Green("✅ go.mod exists")
+	color.Green("go.mod exists")
 }
 
 func printSummary() {
-	fmt.Println("\n📊 Summary:")
+	fmt.Println("\nSummary:")
 	fmt.Println("- Goarchi CLI: OK")
 	fmt.Println("- Environment: checked")
-	fmt.Println("\n✨ System ready for Goarchi development")
+	fmt.Println("\nSystem ready for Goarchi development")
 }
 
 func init() {

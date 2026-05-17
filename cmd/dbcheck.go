@@ -17,16 +17,16 @@ var dbcheckCmd = &cobra.Command{
 
 		sqlDB, err := db.DB()
 		if err != nil {
-			fmt.Println("❌ Failed to get database instance:", err)
+			fmt.Println("Failed to get database instance:", err)
 			return
 		}
 
 		if err := sqlDB.Ping(); err != nil {
-			fmt.Println("❌ Database connection failed:", err)
+			fmt.Println("Database connection failed:", err)
 			return
 		}
 
-		fmt.Println("✅ Database connection successful!")
+		fmt.Println("Database connection successful!")
 	},
 }
 

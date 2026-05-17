@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
-	"github.com/zayn1510/goarchi/core/tools"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+	"github.com/zayn1510/goarchi/core/tools"
 )
 
 var makeControllerCmd = &cobra.Command{
@@ -37,8 +38,8 @@ var makeControllerCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Controller created successfully!"),
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Controller created successfully!"),
 			color.YellowString(filePath),
 		)
 	},
@@ -71,8 +72,8 @@ var makeServiceCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Service created successfully!"),
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Service created successfully!"),
 			color.YellowString(filePath),
 		)
 	},
@@ -118,8 +119,8 @@ var makeRequestCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Request created successfully!"),
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Request created successfully!"),
 			color.YellowString(filePath),
 		)
 	},
@@ -165,8 +166,8 @@ var makeResourceCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Resource created successfully!"),
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Resource created successfully!"),
 			color.YellowString(filePath),
 		)
 	},
@@ -231,8 +232,8 @@ var makeModelCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Model created successfully!"),
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Model created successfully!"),
 			color.YellowString(filePath),
 		)
 	},
@@ -261,11 +262,70 @@ var makeMigrationCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("%s\n  → %s\n",
-			color.HiGreenString("✅ Migration created successfully!"),
+		funcName := toPascalCase(name)
+
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Migration created successfully!"),
 			color.YellowString(fileName),
 		)
+		fmt.Printf("%s\n  -> Name: %s\n  -> Up: %s, Down: %s\n",
+			color.HiCyanString("Don't forget to register in migrations_list.go:"),
+			color.YellowString(name),
+			color.YellowString(fmt.Sprintf("Up%s", funcName)),
+			color.YellowString(fmt.Sprintf("Down%s", funcName)),
+		)
 	},
+}
+
+var makeSeederCmd = &cobra.Command{
+	Use:   "seeder [name]",
+	Short: "Generate a new seeder file",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		name := args[0]
+		timestamp := time.Now().Format("20060102150405")
+		fileName := fmt.Sprintf("database/seeders/%s_%s.go", timestamp, name)
+
+		funcName := toPascalCase(name)
+
+		content, err := tools.GenerateSeeder(funcName)
+		if err != nil {
+			fmt.Println("Failed to execute template:", err)
+			return
+		}
+
+		if err := os.MkdirAll("database/seeders", os.ModePerm); err != nil {
+			fmt.Println("Failed to create folder:", err)
+			return
+		}
+
+		if err := os.WriteFile(fileName, []byte(content), 0644); err != nil {
+			fmt.Println("Failed to create seeder:", err)
+			return
+		}
+
+		fmt.Printf("%s\n  -> %s\n",
+			color.HiGreenString("Seeder created successfully!"),
+			color.YellowString(fileName),
+		)
+		fmt.Printf("%s\n  -> Name: %s\n  -> Up: Seed%s, Down: DropSeed%s\n",
+			color.HiCyanString("Don't forget to register in seeder_list.go:"),
+			color.YellowString(name),
+			color.YellowString(funcName),
+			color.YellowString(funcName),
+		)
+	},
+}
+
+// toPascalCase converts "role_seeder" to "RoleSeeder"
+func toPascalCase(s string) string {
+	parts := strings.Split(s, "_")
+	for i, p := range parts {
+		if len(p) > 0 {
+			parts[i] = strings.ToUpper(p[:1]) + p[1:]
+		}
+	}
+	return strings.Join(parts, "")
 }
 
 func init() {
@@ -275,4 +335,5 @@ func init() {
 	makeCmd.AddCommand(makeResourceCmd)
 	makeCmd.AddCommand(makeModelCmd)
 	makeCmd.AddCommand(makeMigrationCmd)
+	makeCmd.AddCommand(makeSeederCmd)
 }

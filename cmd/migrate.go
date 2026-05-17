@@ -10,9 +10,9 @@ import (
 )
 
 var migrateCmd = &cobra.Command{
-	Use:   "migrate [direction]",
+	Use:   "migrate [direction] [name?]",
 	Short: "Run database migrations (up or down)",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		direction := args[0]
 
@@ -28,24 +28,53 @@ var migrateCmd = &cobra.Command{
 			return
 		}
 
+		target := ""
+		if len(args) == 2 {
+			target = args[1]
+		}
+
+		found := false
 		for _, migration := range migrations.AllMigrations {
-			fmt.Println("Running migration:", migration.Name)
+			if target != "" && migration.Name != target {
+				continue
+			}
+
+			found = true
 
 			var err error
 			if direction == "up" {
+				fmt.Println("⬆Migrating:", migration.Name)
 				err = migration.Up(db)
+				if err != nil {
+					fmt.Printf("Failed [%s]: %v\n", migration.Name, err)
+					os.Exit(1)
+				}
+				fmt.Println("Migrated:", migration.Name)
 			} else {
+				fmt.Println("⬇Dropping:", migration.Name)
 				err = migration.Down(db)
+				if err != nil {
+					fmt.Printf("Failed [%s]: %v\n", migration.Name, err)
+					os.Exit(1)
+				}
+				fmt.Println("Dropped:", migration.Name)
 			}
-
-			if err != nil {
-				fmt.Println("❌ Failed:", err)
-				os.Exit(1)
-			}
-			fmt.Println("✅ Done:", migration.Name)
 		}
 
-		fmt.Println("\n✅ All migrations completed successfully!")
+		if target != "" && !found {
+			fmt.Printf("Migration '%s' not found.\n", target)
+			fmt.Println("\nAvailable migrations:")
+			for _, m := range migrations.AllMigrations {
+				fmt.Println(" -", m.Name)
+			}
+			os.Exit(1)
+		}
+
+		if direction == "up" {
+			fmt.Println("\nAll migrations applied successfully!")
+		} else {
+			fmt.Println("\nAll tables dropped successfully!")
+		}
 	},
 }
 

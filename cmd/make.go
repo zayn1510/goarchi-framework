@@ -237,10 +237,10 @@ var cleanCmd = &cobra.Command{
 		tidy.Stdout = os.Stdout
 		tidy.Stderr = os.Stderr
 		if err := tidy.Run(); err != nil {
-			fmt.Println("❌ Failed to tidy modules:", err)
+			fmt.Println("Failed to tidy modules:", err)
 			return
 		}
-		fmt.Println("✅ Unused packages removed!")
+		fmt.Println("Unused packages removed!")
 	},
 }
 
