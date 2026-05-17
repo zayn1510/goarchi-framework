@@ -1,18 +1,18 @@
-# 📦 Goarchi
+# Goarchi
 
 > Simple Layered Architecture Generator for Golang
 
-Goarchi is a CLI tool that helps you scaffold a clean, layered Go project structure — controllers, services, models, migrations, requests, and resources — in seconds.
+Goarchi is a CLI tool that helps you scaffold a clean, layered Go project structure — controllers, services, models, migrations, requests, resources, and seeders — in seconds.
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 - Go `1.26.3` or higher
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Create a new project
 
@@ -37,12 +37,6 @@ Build the binary from inside your project:
 
 ```bash
 go run cli/main.go build
-```
-
-Output:
-```
-📦 Building Goarchi binary...
-✅ Binary generated successfully!
 ```
 
 Move binary to PATH:
@@ -95,7 +89,7 @@ go run main.go
 
 ---
 
-## 🔧 Usage
+## Usage
 
 ```bash
 goarchi make [command] [name] [fields...]
@@ -103,7 +97,7 @@ goarchi make [command] [name] [fields...]
 
 ### Available Commands
 
-#### 🔧 Controller
+#### Controller
 ```bash
 goarchi make controller [name]
 ```
@@ -112,12 +106,12 @@ Generates a controller file at `app/controllers/[name]_controller.go`.
 **Example:**
 ```bash
 goarchi make controller user
-# → app/controllers/user_controller.go (struct: UserController)
+# -> app/controllers/user_controller.go (struct: UserController)
 ```
 
 ---
 
-#### 🛠️ Service
+#### Service
 ```bash
 goarchi make service [name]
 ```
@@ -126,12 +120,12 @@ Generates a service file at `app/services/[name]_service.go`.
 **Example:**
 ```bash
 goarchi make service user
-# → app/services/user_service.go (struct: UserService)
+# -> app/services/user_service.go (struct: UserService)
 ```
 
 ---
 
-#### 📝 Request
+#### Request
 ```bash
 goarchi make request [name] [field:type...]
 ```
@@ -140,12 +134,12 @@ Generates a request struct with validation tags at `app/requests/[name]_request.
 **Example:**
 ```bash
 goarchi make request user name:string age:int email:string
-# → app/requests/user_request.go (struct: UserRequest)
+# -> app/requests/user_request.go (struct: UserRequest)
 ```
 
 ---
 
-#### 📦 Resource
+#### Resource
 ```bash
 goarchi make resource [name] [field:type...]
 ```
@@ -154,12 +148,12 @@ Generates a response formatter (DTO) at `app/resources/[name]_resource.go`.
 **Example:**
 ```bash
 goarchi make resource user id:int name:string email:string
-# → app/resources/user_resource.go (struct: UserResource)
+# -> app/resources/user_resource.go (struct: UserResource)
 ```
 
 ---
 
-#### 🧩 Model
+#### Model
 ```bash
 goarchi make model [name] [field:type;gorm_tag...]
 ```
@@ -168,18 +162,18 @@ Generates a GORM model at `app/models/[name].go`. `CreatedAt` and `UpdatedAt` ar
 **Example:**
 ```bash
 goarchi make model users "id:int;primaryKey" "name:string;not null"
-# → app/models/users.go (struct: User)
+# -> app/models/users.go (struct: User)
 ```
 
 For relations (foreign key):
 ```bash
 goarchi make model users "Role:foreignKey:RoleID"
-# → adds: Role Role `gorm:"foreignKey:RoleID"`
+# -> adds: Role *Role `gorm:"foreignKey:RoleID"`
 ```
 
 ---
 
-#### 🗃️ Migration (Generate file)
+#### Migration (Generate file)
 ```bash
 goarchi make migration [name]
 ```
@@ -188,32 +182,82 @@ Generates a timestamped migration file at `database/migrations/[timestamp]_[name
 **Example:**
 ```bash
 goarchi make migration create_users_table
-# → database/migrations/20240101120000_create_users_table.go
+# -> database/migrations/20240101120000_create_users_table.go
+```
+
+Don't forget to register it in `database/migrations/migrations_list.go`:
+```go
+{
+    Name: "create_users_table",
+    Up:   CreateUsersTable,
+    Down: DropUsersTable,
+}
 ```
 
 ---
 
-#### 🧬 Migrate (Run)
+#### Seeder (Generate file)
 ```bash
+goarchi make seeder [name]
+```
+Generates a timestamped seeder file at `database/seeders/[timestamp]_[name].go`.
+
+**Example:**
+```bash
+goarchi make seeder role_seeder
+# -> database/seeders/20240101120000_role_seeder.go
+```
+
+Don't forget to register it in `database/seeders/seeder_list.go`:
+```go
+{
+    Name: "role_seeder",
+    Up:   SeedRoleSeeder,
+    Down: DropSeedRoleSeeder,
+}
+```
+
+---
+
+#### Migrate (Run)
+```bash
+# Run all migrations
 go run cli/main.go migrate up
 go run cli/main.go migrate down
+
+# Run a specific migration
+go run cli/main.go migrate up create_users_table
+go run cli/main.go migrate down create_users_table
 ```
-Runs all migrations registered in `database/migrations/migrations_list.go`.
 
-- `up` — applies all migrations in `AllMigrations`
-- `down` — rolls back all migrations in `AllMigrations`
+- `up` — applies migrations
+- `down` — drops tables
+- Optionally pass a migration name to run only that one
 
-> ⚠️ Migrate is run via `go run cli/main.go` not from the `goarchi` binary. This is because Go compiles to a static binary and cannot access migration files added after build time.
+> Migrate is run via `go run cli/main.go` not from the `goarchi` binary. This is because Go compiles to a static binary and cannot access migration files added after build time.
 
 ---
 
-#### 🔍 Check Vulnerabilities
+#### Seed (Run)
+```bash
+# Run all seeders
+go run cli/main.go seed up
+go run cli/main.go seed down
+
+# Run a specific seeder
+go run cli/main.go seed up role_seeder
+go run cli/main.go seed down role_seeder
+```
+
+- `up` — inserts seed data
+- `down` — removes seed data
+- Optionally pass a seeder name to run only that one
+
+---
+
+#### Check Vulnerabilities
 ```bash
 goarchi govulncheck
-```
-or
-```bash
-go run cli/main.go govulncheck
 ```
 
 Automatically installs/updates `govulncheck` and scans all dependencies for known vulnerabilities.
@@ -226,7 +270,7 @@ go mod tidy
 
 ---
 
-## 🐳 Docker Setup
+## Docker Setup
 
 ```bash
 goarchi docker:init
@@ -241,55 +285,18 @@ Interactive wizard that generates all Docker configuration files for your projec
 3. **Air Hot Reload** — yes or no
 4. **Nginx** — use as reverse proxy or skip
 5. **DB GUI**
-   - MySQL → phpMyAdmin / Adminer / Skip
-   - PostgreSQL → Adminer / Skip
+   - MySQL -> phpMyAdmin / Adminer / Skip
+   - PostgreSQL -> Adminer / Skip
 6. **App name** — used as prefix for all container names
 
 **Generated files:**
 
 | File | Always |
 |------|--------|
-| `Dockerfile.dev` | ✅ |
-| `docker-compose.yml` | ✅ |
-| `install.sh` | ✅ |
+| `Dockerfile.dev` | yes |
+| `docker-compose.yml` | yes |
+| `install.sh` | yes |
 | `nginx/default.conf` | Only if Nginx selected |
-
-**Example session:**
-```
-🐳 Goarchi Docker Setup
-========================
-Choose Go Version:
-1. 1.24  2. 1.25  3. 1.26  4. latest
-Enter choice (1-4): 3
-
-Choose Database:
-1. PostgreSQL  2. MySQL
-Enter choice (1-2): 2
-
-Use Air Hot Reload? (y/n): y
-
-Use Nginx as reverse proxy? (y/n): y
-
-Choose DB GUI:
-1. phpMyAdmin  2. Adminer  3. Skip
-Enter choice (1-3): 1
-
-Enter your app name: myapp
-
-✅ Docker configuration generated successfully!
-📄 Dockerfile.dev
-📄 docker-compose.yml
-📄 nginx/default.conf
-📄 install.sh
-
-🔖 Container names:
-   App   : myapp_api
-   DB    : myapp_db
-   Nginx : myapp_nginx
-   DB GUI (phpmyadmin) : myapp_gui
-
-▶️  To deploy, run: bash install.sh
-```
 
 **Ports:**
 
@@ -303,7 +310,7 @@ Enter your app name: myapp
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
@@ -319,23 +326,22 @@ Enter your app name: myapp
 │   └── main.go            # CLI entry point (for building binary)
 ├── cmd/                   # Cobra CLI commands
 ├── config/                # App & database configuration
-├── console/               # Project CLI commands (migrate, dbcheck)
 ├── core/
 │   ├── generate/          # Code generator
 │   │   └── templates/     # .tmpl files for each layer
 │   └── tools/             # Utility helpers
 ├── database/
-│   └── migrations/        # Migration files & registry
+│   ├── migrations/        # Migration files & registry
+│   └── seeders/           # Seeder files & registry
 ├── routers/
 │   └── web.go             # Route definitions
-├── public/                # Static files
 ├── main.go                # App entry point
 └── .env.example           # Environment variable template
 ```
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Copy `.env.example` to `.env` and fill in your values:
 
@@ -369,10 +375,10 @@ JWT_SECRET_KEY=your-secret
 JWT_EXPIRED_TOKEN=5h
 ```
 
-> ⚠️ When using Docker, `DB_HOST` should match the service name in `docker-compose.yml` (default: `db`).
+> When using Docker, `DB_HOST` should match the service name in `docker-compose.yml` (default: `db`).
 
 ---
 
-## 📄 License
+## License
 
 MIT License. See [LICENSE](LICENSE) for details.

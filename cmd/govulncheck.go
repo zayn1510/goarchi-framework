@@ -20,7 +20,7 @@ var govulncheckCmd = &cobra.Command{
 		// cek binary govulncheck
 		path, err := exec.LookPath("govulncheck")
 		if err != nil {
-			color.Red("❌ govulncheck not installed")
+			color.Red("govulncheck not installed")
 
 			color.Cyan("[INFO] Installing govulncheck with Go 1.26 toolchain...")
 
@@ -40,7 +40,7 @@ var govulncheckCmd = &cobra.Command{
 			install.Stderr = os.Stderr
 
 			if err := install.Run(); err != nil {
-				color.Red("❌ Failed to install govulncheck: %v", err)
+				color.Red("Failed to install govulncheck: %v", err)
 				return
 			}
 
@@ -65,7 +65,7 @@ var govulncheckCmd = &cobra.Command{
 
 		if err := check.Run(); err != nil {
 			fmt.Println("")
-			color.Red("❌ govulncheck detected issues (or tool mismatch)")
+			color.Red("govulncheck detected issues (or tool mismatch)")
 			fmt.Println("   If this looks like a toolchain error, rebuild govulncheck:")
 			fmt.Println("   go install golang.org/x/vuln/cmd/govulncheck@latest")
 			fmt.Println("")
@@ -73,7 +73,7 @@ var govulncheckCmd = &cobra.Command{
 		}
 
 		fmt.Println("")
-		color.Green("✅ No vulnerabilities found!")
+		color.Green("No vulnerabilities found!")
 		fmt.Println("")
 	},
 }
