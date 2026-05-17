@@ -2,7 +2,6 @@ package tools
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -12,24 +11,21 @@ type IPGeoData struct {
 	Country   string  `json:"country"`
 	City      string  `json:"city"`
 	ISP       string  `json:"isp"`
-	Query     string  `json:"query"` // IP Address
+	Query     string  `json:"query"`
 	Region    string  `json:"regionName"`
 	Latitude  float64 `json:"lat"`
 	Longitude float64 `json:"lon"`
-	Org       string  `json:"org"` // ISP or organization name
-	AS        string  `json:"as"`  // Autonomous System number
+	Org       string  `json:"org"`
+	AS        string  `json:"as"`  
 	Browser   string  `json:"browser"`
 	OS        string  `json:"os"`
 	Device    string  `json:"device"`
-	UserAgent string  `json:"user_agent"` // Full User-Agent string
+	UserAgent string  `json:"user_agent"`
 }
-
-// GetIPDetails fetches geo information from ip-api.com and user agent info.
 func GetIPDetails(userAgent string) (*IPGeoData, error) {
 	// URL untuk lookup IP
-	url := fmt.Sprintf("http://ip-api.com/json/")
+	url := "http://ip-api.com/json/"
 
-	// Mengirimkan request HTTP ke ip-api.com
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -54,7 +50,6 @@ func GetIPDetails(userAgent string) (*IPGeoData, error) {
 	return &data, nil
 }
 
-// ParseUserAgent untuk mendeteksi Browser, OS, dan Device dari user-agent string.
 func ParseUserAgent(userAgent string) (browser string, os string, device string) {
 	// Deteksi browser
 	if strings.Contains(userAgent, "Chrome") {
@@ -81,8 +76,6 @@ func ParseUserAgent(userAgent string) (browser string, os string, device string)
 	} else {
 		os = "Unknown"
 	}
-
-	// Deteksi perangkat (mobile/desktop)
 	if strings.Contains(userAgent, "Mobi") {
 		device = "Mobile"
 	} else {

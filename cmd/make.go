@@ -3,13 +3,13 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+	"os"
 )
 
 type AppConfig struct {
@@ -59,7 +59,6 @@ var installDBCommand = &cobra.Command{
 
 		reader := bufio.NewReader(os.Stdin)
 
-		// Select client
 		var choice int
 		for {
 			fmt.Println("Choose a database client to install:")
@@ -75,21 +74,19 @@ var installDBCommand = &cobra.Command{
 				choice = num
 				break
 			}
-			fmt.Println("❌ Invalid choice. Please enter a number between 1 and 4.\n")
+			fmt.Println("Invalid choice. Please enter a number between 1 and 4.")
 		}
 
-		// Handle GORM special case
 		if choice == 1 {
-			fmt.Println("📦 Installing GORM core (gorm.io/gorm)...")
+			fmt.Println("Installing GORM core (gorm.io/gorm)...")
 			cmdGorm := exec.Command("go", "get", "gorm.io/gorm")
 			cmdGorm.Stdout = os.Stdout
 			cmdGorm.Stderr = os.Stderr
 			if err := cmdGorm.Run(); err != nil {
-				fmt.Println("❌ Failed to install GORM:", err)
+				fmt.Println("Failed to install GORM:", err)
 				return
 			}
 
-			// Driver selection for GORM
 			fmt.Println("Choose GORM driver to install:")
 			drivers := map[int]string{
 				1: "gorm.io/driver/mysql",
@@ -118,33 +115,32 @@ var installDBCommand = &cobra.Command{
 					driverChoice = num
 					break
 				}
-				fmt.Println("❌ Invalid driver. Please enter a valid number.\n")
+				fmt.Println("Invalid driver. Please enter a valid number.")
 			}
 
 			driver := drivers[driverChoice]
-			fmt.Printf("📦 Installing GORM driver: %s\n", driver)
+			fmt.Printf("Installing GORM driver: %s\n", driver)
 			cmdDriver := exec.Command("go", "get", driver)
 			cmdDriver.Stdout = os.Stdout
 			cmdDriver.Stderr = os.Stderr
 			if err := cmdDriver.Run(); err != nil {
-				fmt.Printf("❌ Failed to install %s: %s\n", driver, err)
+				fmt.Printf("Failed to install %s: %s\n", driver, err)
 			} else {
-				fmt.Printf("✅ Successfully installed %s\n", driver)
+				fmt.Printf("Successfully installed %s\n", driver)
 			}
 			return
 		}
 
-		// Install non-GORM package
 		packagePath := packages[choice]
-		fmt.Printf("📦 Installing %s ...\n", packagePath)
+		fmt.Printf("Installing %s ...\n", packagePath)
 		cmdInstall := exec.Command("go", "get", packagePath)
 		cmdInstall.Stdout = os.Stdout
 		cmdInstall.Stderr = os.Stderr
 
 		if err := cmdInstall.Run(); err != nil {
-			fmt.Printf("❌ Failed to install %s: %s\n", packagePath, err)
+			fmt.Printf("Failed to install %s: %s\n", packagePath, err)
 		} else {
-			fmt.Printf("✅ Successfully installed %s\n", packagePath)
+			fmt.Printf("Successfully installed %s\n", packagePath)
 		}
 	},
 }
@@ -173,15 +169,7 @@ Simply select a framework by entering the corresponding number.`,
 			3: "github.com/labstack/echo/v4",
 		}
 
-		fmt.Println("Choose a framework to install:")
-		for i, opt := range options {
-			fmt.Printf("  %d. %s\n", i+1, opt)
-		}
-		fmt.Print("\nEnter your choice (1-3): ")
-
 		reader := bufio.NewReader(os.Stdin)
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
 		var choice int
 		for {
 			fmt.Println("Choose a framework to install:")
@@ -198,19 +186,19 @@ Simply select a framework by entering the corresponding number.`,
 				choice = num
 				break
 			}
-			fmt.Println("❌ Invalid choice. Please enter a number between 1 and 3.\n")
+			fmt.Println("Invalid choice. Please enter a number between 1 and 3.")
 		}
 		packagePath := packages[choice]
-		fmt.Printf("📦 Installing %s ...\n", packagePath)
+		fmt.Printf("Installing %s ...\n", packagePath)
 
 		cmdInstall := exec.Command("go", "get", packagePath)
 		cmdInstall.Stdout = os.Stdout
 		cmdInstall.Stderr = os.Stderr
 
 		if err := cmdInstall.Run(); err != nil {
-			fmt.Printf("❌ Failed to install %s: %s\n", packagePath, err)
+			fmt.Printf("Failed to install %s: %s\n", packagePath, err)
 		} else {
-			fmt.Printf("✅ Successfully installed %s\n", packagePath)
+			fmt.Printf("Successfully installed %s\n", packagePath)
 		}
 	},
 }
@@ -218,17 +206,17 @@ Simply select a framework by entering the corresponding number.`,
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show the current version of the Goarchi Framework CLI tool",
-	Long:  `Displays the current version of the Goarchi Framework CLI tool as defined in the configuration file. This command helps you keep track of the version you are using and check for any updates or new releases.`,
+	Long:  `Displays the current version of the Goarchi Framework CLI tool as defined in the configuration file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := readConfig("config.yaml")
 		if err != nil {
 			fmt.Println("Error reading config:", err)
 			return
 		}
-		// Displaying version
 		fmt.Printf("Goarchi Framework CLI Tool - Version: %s\n", config.Version)
 	},
 }
+
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Clean unused Go modules",
@@ -245,13 +233,11 @@ var cleanCmd = &cobra.Command{
 }
 
 func readConfig(filename string) (*AppConfig, error) {
-	// Membaca isi file YAML
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	// Parsing YAML
 	var config AppConfig
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {

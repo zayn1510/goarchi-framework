@@ -9,7 +9,11 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/zayn1510/goarchi/core/tools"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
+
+var caser = cases.Title(language.English)
 
 var makeControllerCmd = &cobra.Command{
 	Use:   "controller [name]",
@@ -20,7 +24,7 @@ var makeControllerCmd = &cobra.Command{
 		parts := strings.Split(path, "/")
 		name := parts[len(parts)-1]
 
-		structName := strings.Title(name) + "Controller"
+		structName := caser.String(name) + "Controller"
 		filePath := fmt.Sprintf("app/controllers/%s_controller.go", path)
 		buf, err := tools.GenerateController(structName)
 		if err != nil {
@@ -54,7 +58,7 @@ var makeServiceCmd = &cobra.Command{
 		parts := strings.Split(path, "/")
 		name := parts[len(parts)-1]
 
-		structName := strings.Title(name) + "Service"
+		structName := caser.String(name) + "Service"
 		filePath := fmt.Sprintf("app/services/%s_service.go", path)
 		content, err := tools.GenerateServices(structName)
 		if err != nil {
@@ -88,7 +92,7 @@ var makeRequestCmd = &cobra.Command{
 		parts := strings.Split(path, "/")
 		name := parts[len(parts)-1]
 
-		structName := strings.Title(name) + "Request"
+		structName := caser.String(name) + "Request"
 		filePath := fmt.Sprintf("app/requests/%s_request.go", path)
 
 		var fieldsBuilder strings.Builder
@@ -98,7 +102,7 @@ var makeRequestCmd = &cobra.Command{
 				fmt.Printf("Invalid field '%s'. Use format name:type\n", fieldArg)
 				return
 			}
-			fieldName := strings.Title(parts[0])
+			fieldName := caser.String(parts[0])
 			fieldType := parts[1]
 			fieldsBuilder.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\" validate:\"required\"`\n", fieldName, fieldType, parts[0]))
 		}
@@ -135,7 +139,7 @@ var makeResourceCmd = &cobra.Command{
 		parts := strings.Split(path, "/")
 		name := parts[len(parts)-1]
 
-		structName := strings.Title(name) + "Resource"
+		structName := caser.String(name) + "Resource"
 		filePath := fmt.Sprintf("app/resources/%s_resource.go", path)
 
 		var fieldsBuilder strings.Builder
@@ -145,7 +149,7 @@ var makeResourceCmd = &cobra.Command{
 				fmt.Printf("Invalid field '%s'. Use format name:type\n", fieldArg)
 				return
 			}
-			fieldName := strings.Title(parts[0])
+			fieldName := caser.String(parts[0])
 			fieldType := parts[1]
 			fieldsBuilder.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", fieldName, fieldType, parts[0]))
 		}
@@ -181,7 +185,7 @@ var makeModelCmd = &cobra.Command{
 		path := strings.ToLower(args[0])
 		parts := strings.Split(path, "/")
 		name := parts[len(parts)-1]
-		structName := strings.Title(strings.TrimSuffix(name, "s"))
+		structName := caser.String(strings.TrimSuffix(name, "s"))
 
 		dir := "app/models/" + strings.Join(parts[:len(parts)-1], "/")
 		filePath := fmt.Sprintf("%s/%s.go", dir, name)
@@ -201,7 +205,7 @@ var makeModelCmd = &cobra.Command{
 				continue
 			}
 
-			fieldName := strings.Title(parts[0])
+			fieldName := caser.String(parts[0])
 			tagParts := strings.Split(parts[1], ";")
 			fieldType := tagParts[0]
 			gormTags := strings.Join(tagParts[1:], ";")
