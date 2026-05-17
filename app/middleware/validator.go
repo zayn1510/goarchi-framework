@@ -22,14 +22,15 @@ var (
 )
 
 func init() {
-	// Inisialisasi translator
 	eng := en.New()
 	uni := ut.New(eng, eng)
 
 	trans, _ := uni.GetTranslator("en")
 	validate = validator.New()
 
-	enTranslations.RegisterDefaultTranslations(validate, trans)
+	if err := enTranslations.RegisterDefaultTranslations(validate, trans); err != nil {
+		panic(fmt.Sprintf("failed to register translations: %v", err))
+	}
 
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := fld.Tag.Get("json")

@@ -1,16 +1,16 @@
 package middleware
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/zayn1510/goarchi/config"
+	"fmt"
 )
 
 const (
@@ -26,17 +26,7 @@ var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 func GetExpiredDuration() time.Duration {
 	return config.JWTExpired
 }
-func getEnv(key, defaultValue string) int {
-	val, exists := os.LookupEnv(key)
-	if !exists {
-		val = defaultValue
-	}
-	result, err := strconv.Atoi(val)
-	if err != nil {
-		return 5
-	}
-	return result
-}
+
 func validateToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -46,17 +36,17 @@ func validateToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	})
 
 	if err != nil || !token.Valid {
-		return nil, nil, fmt.Errorf(ErrInvalidToken)
+		return nil, nil, errors.New(ErrInvalidToken)
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, nil, fmt.Errorf(ErrInvalidClaims)
+		return nil, nil, errors.New(ErrInvalidClaims)
 	}
 
 	if exp, ok := claims["exp"].(float64); ok {
 		if time.Now().Unix() > int64(exp) {
-			return nil, nil, fmt.Errorf(ErrTokenExpired)
+			return nil, nil, errors.New(ErrTokenExpired)
 		}
 	}
 
